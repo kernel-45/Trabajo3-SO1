@@ -16,13 +16,15 @@ pthread_t threads[N_THREADS];
 void *worker(void *ptr); 
 
 int main(int argc, char *argv[]) {
- 
+    printf("WAA1"); 
     if (argc < 2 || argv[1] == NULL)
     {
-        fprintf(stderr, ROJO, "Tienes que poner el nombre del fichero de la pila después del comando" RESET); 
+        fprintf(stderr, ROJO "Tienes que poner el nombre del fichero de la pila después del comando\n" RESET); 
         return FAILURE; 
     }
+    printf("WAA2"); 
     pila = my_stack_read(argv[1]); 
+    printf("WAA3"); 
     //Inicializamos los datos que meteremos en la pila
     int *data;
     if (pila == NULL) //No existe la pila
