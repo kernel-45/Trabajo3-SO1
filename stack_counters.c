@@ -2,8 +2,8 @@
 #include <pthread.h>
 #include "my_lib.h" 
 
-#define RESET "\033[0m" 
 #define ROJO "\x1b[31m"
+#define RESET "\033[0m" 
 #define SUCCESS 0
 #define FAILURE -1
 #define N_THREADS 10
@@ -16,8 +16,8 @@ pthread_t threads[N_THREADS];
 void *worker(void *ptr); 
 
 int main(int argc, char *argv[]) {
-  
-    if (argv[1] == NULL)
+ 
+    if (argc < 2 || argv[1] == NULL)
     {
         fprintf(stderr, ROJO, "Tienes que poner el nombre del fichero de la pila después del comando" RESET); 
         return FAILURE; 
@@ -66,8 +66,8 @@ int main(int argc, char *argv[]) {
     //hasta los 10, y si no es que tenía más de 10 elementos y no hay que hacer nada más que ignorarlos
     for (size_t i = 0; i < N_THREADS; i++)
     {
-         pthread_create(threads[i], NULL, worker, NULL); 
-         fprintf("Se ha creado el hilo %lu", threads[i]); 
+         pthread_create(&threads[i], NULL, worker, NULL); 
+         fprintf(stdout, "Se ha creado el hilo %lu", threads[i]); 
     }
     //Se han creado todos los hilos, bloqueamos el hilo principal
     for (size_t i = 0; i < N_THREADS; i++)
