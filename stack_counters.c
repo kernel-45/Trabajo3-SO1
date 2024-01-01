@@ -69,8 +69,15 @@ int main(int argc, char *argv[]) {
          pthread_create(threads[i], NULL, worker, NULL); 
          fprintf("Se ha creado el hilo %lu", threads[i]); 
     }
-    
-    return 0;
+    //Se han creado todos los hilos, bloqueamos el hilo principal
+    for (size_t i = 0; i < N_THREADS; i++)
+    {
+            pthread_join(threads[i], NULL); 
+    }
+    my_stack_write(pila, argv[1]); 
+    my_stack_purge(pila); 
+    pthread_exit(NULL); 
+    return SUCCESS;
 }
 void *worker(void *ptr){
     for (size_t i = 0; i < ITERATIONS; i++)
@@ -87,4 +94,5 @@ void *worker(void *ptr){
         my_stack_push(pila, data); 
         pthread_mutex_unlock(&mutex); 
     } 
+    pthread_exit(NULL); 
 }
