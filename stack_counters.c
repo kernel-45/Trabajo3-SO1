@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <limits.h>
+#include <unistd.h>
 #include "my_lib.h" 
 
 #define ROJO "\x1b[31m"
@@ -13,53 +15,60 @@
 struct my_stack *pila; 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER; // semáforo global
 pthread_t threads[N_THREADS];
+
 void *worker(void *ptr); 
 
 int main(int argc, char *argv[]) {
-    printf("WAA1"); 
-    if (argc < 2 || argv[1] == NULL)
-    {
+    printf("WAA1\n"); 
+    
+    if (argc < 2 || argv[1] == NULL){
         fprintf(stderr, ROJO "Tienes que poner el nombre del fichero de la pila después del comando\n" RESET); 
         return FAILURE; 
     }
-    printf("WAA2"); 
+    
+    printf("WAA2\n"); 
+    
     pila = my_stack_read(argv[1]); 
-    printf("WAA3"); 
+
+    printf("WAA3\n"); 
+    
     //Inicializamos los datos que meteremos en la pila
     int *data;
-    if (pila == NULL) //No existe la pila
-    { 
+
+    if (pila == NULL){ //No existe la pila 
         pila = my_stack_init(sizeof(data)); 
-        for (size_t i = 0; i < N_ELEMENTS; i++)
-        {
+        
+        for (size_t i = 0; i < N_ELEMENTS; i++){
             data = malloc(sizeof(data)); 
-            if (data == NULL)
-            {
-                fprintf(stderr, ROJO "Error reservando memoria para data con malloc()" RESET);
+            
+            if (data == NULL){
+                fprintf(stderr, ROJO "Error reservando memoria para data con malloc()\n" RESET);
                 return FAILURE;
             }
+            
             *data = 0; 
-            if (my_stack_push(pila, data) < 0)
-            {
-                fprintf(stderr, ROJO "Error introduciendo elemento en la pila" RESET);
+            
+            if (my_stack_push(pila, data) < 0){
+                fprintf(stderr, ROJO "Error introduciendo elemento en la pila\n" RESET);
                 return FAILURE;
             } 
         } 
         //Si la pila ya existe...
     } else if (my_stack_len(pila) < N_ELEMENTS) {
-        for (size_t i = my_stack_len(pila); i < N_ELEMENTS; i++)
-        {
-            fprintf("Se van a introducir %d elementos en la pila", 10-my_stack_len(pila)); 
+        for (size_t i = my_stack_len(pila); i < N_ELEMENTS; i++){
+            int numElem = 10-my_stack_len(pila);
+            fprintf(stdout, "Se van a introducir %d elementos en la pila\n", numElem);
             data = malloc(sizeof(data)); 
-            if (data == NULL)
-            {
-                fprintf(stderr, ROJO "Error reservando memoria para data con malloc()" RESET);
+            
+            if (data == NULL){
+                fprintf(stderr, ROJO "Error reservando memoria para data con malloc()\n" RESET);
                 return FAILURE;
             }
-            *data = 0; 
-            if (my_stack_push(pila, data) < 0)
-            {
-                fprintf(stderr, ROJO "Error introduciendo elemento en la pila" RESET);
+
+            *data = 0;
+
+            if (my_stack_push(pila, data) < 0){
+                fprintf(stderr, ROJO "Error introduciendo elemento en la pila\n" RESET);
                 return FAILURE;
             }  
         } 
@@ -69,7 +78,7 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < N_THREADS; i++)
     {
          pthread_create(&threads[i], NULL, worker, NULL); 
-         fprintf(stdout, "Se ha creado el hilo %lu", threads[i]); 
+         fprintf(stdout, "Se ha creado el hilo %lu\n", threads[i]); 
     }
     //Se han creado todos los hilos, bloqueamos el hilo principal
     for (size_t i = 0; i < N_THREADS; i++)
@@ -81,9 +90,9 @@ int main(int argc, char *argv[]) {
     pthread_exit(NULL); 
     return SUCCESS;
 }
+
 void *worker(void *ptr){
-    for (size_t i = 0; i < ITERATIONS; i++)
-    {
+    for (size_t i = 0; i < ITERATIONS; i++){
         //Bloqueamos antes de acceder al contenido de la pila
         pthread_mutex_lock(&mutex); 
         int *data = (int*)my_stack_pop(pila); 
