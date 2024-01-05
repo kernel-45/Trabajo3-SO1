@@ -188,6 +188,7 @@ void *my_stack_pop(struct my_stack *stack)
     free(node);
     return datos;
 }
+
 int my_stack_len(struct my_stack *stack)
 {
     if (stack == NULL)
@@ -262,25 +263,53 @@ int fd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR);
     return elementos_escritos;
 }
 
-struct my_stack *my_stack_read(char *filename)
-{
+struct my_stack *my_stack_read(char *filename){
     int fd;
-    int *buffer;  
-    if(!(fd=open(filename, O_RDONLY))){
-        return -1; 
+    int size;
+    void *buffer;
+
+    if ((fd = open(filename, O_RDONLY)) == -1) {
+        perror("Error al abrir el archivo");
+        return NULL;  // Devolvemos NULL en caso de error
     }
-    if(!(*buffer=malloc(sizeof(int)))){
-        return -1; 
+
+    if (read(fd, &size, sizeof(int)) != sizeof(int)) {
+        perror("Error al leer el tamaño de la pila");
+        close(fd);
+        return NULL;
     }
-    read(fd,buffer,sizeof(int));    
-    struct my_stack *resultado=my_stack_init(*buffer);
-    void *data=malloc(resultado->size);
-    while(read(fd,data,resultado->size)>0)
-    {       
-        my_stack_push(resultado,data);
-        data=malloc(resultado->size);
+
+    if (!(buffer = malloc(sizeof(int)))) {
+        perror("Error de asignación de memoria para buffer");
+        close(fd);
+        return NULL;  // Devolvemos NULL en caso de error
     }
-    //Devuelve los datos de la lectura.
+
+    struct my_stack *resultado=my_stack_init(size);
+    if (!resultado) {
+        perror("Error al inicializar la nueva pila");
+        free(buffer);
+        close(fd);
+        return NULL;
+    }
+
+    while (read(fd, buffer, size) > 0) {
+        void *data = malloc(size);
+        if (!data) {
+            perror("Error de asignación de memoria para datos");
+            my_stack_purge(resultado);  // Liberar memoria antes de salir
+            free(buffer);
+            close(fd);
+            return NULL;
+        }
+
+        memcpy(data, buffer, size);
+        my_stack_push(resultado, data);
+    }
+
+    free(buffer);
+    close(fd);
+
     return resultado;
 }
  
